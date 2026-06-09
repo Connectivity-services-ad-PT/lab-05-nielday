@@ -11,6 +11,8 @@
 
 Ghi chú thêm những vấn đề gặp phải hoặc điều chỉnh tại đây:
 
-```
-- Mô tả…
+- Đã thay đổi API để kết nối trực tiếp tới PostgreSQL (đọc/ghi thật).
+- Đã tách AI service ra build riêng bằng Dockerfile với non-root user.
+- Đã map thêm port 5432 cho DB để khớp hoàn toàn với checklist.
+- Newman E2E Pass 20/20 Assertions.
 ```
