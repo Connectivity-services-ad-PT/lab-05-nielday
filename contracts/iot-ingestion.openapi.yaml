@@ -1,9 +1,12 @@
 openapi: 3.1.0
 info:
   title: FIT4110 Lab 05 - IoT Ingestion API
-  version: 0.5.0
+  version: 0.1.0
+  contact:
+    name: "API Support"
+    email: "support@example.com"
   description: |
-    Contract dùng cho Lab 05 Docker Compose readiness, kế thừa logic của Lab 03/04.
+    Contract dùng cho Lab 05 Docker Compose readiness, kế thừa logic của Lab 03/04.
     Payload chính dùng các trường device_id, metric, value, unit và timestamp.
     Boundary minh hoạ cho temperature là -40 đến 80.
 servers:
@@ -40,7 +43,9 @@ paths:
                   value:
                     status: ok
                     service: iot-ingestion
-                    version: 0.5.0
+                    version: 0.1.0
+                    db: ok
+                    ai: ok
 
   /readings:
     post:
@@ -191,6 +196,7 @@ paths:
       tags: [readings]
       operationId: getReadingById
       summary: Lấy chi tiết một bản ghi cảm biến
+      description: API lấy chi tiết một bản ghi telemetry dựa trên reading_id định dạng chuẩn.
       parameters:
         - name: reading_id
           in: path
@@ -316,7 +322,7 @@ components:
 
     HealthResponse:
       type: object
-      required: [status, service, version]
+      required: [status, service, version, db, ai]
       properties:
         status:
           type: string
@@ -327,7 +333,15 @@ components:
           example: iot-ingestion
         version:
           type: string
-          example: 0.5.0
+          example: 0.1.0
+        db:
+          type: string
+          enum: [ok, error]
+          example: ok
+        ai:
+          type: string
+          enum: [ok, error]
+          example: ok
 
     ProblemDetails:
       type: object

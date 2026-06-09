@@ -1,10 +1,10 @@
-# RUN_COMPOSE.md – Hướng dẫn chạy Lab 05
+# RUN_COMPOSE.md – Hướng dẫn chạy Lab 05
 
-Tài liệu này hướng dẫn người khác clone repo sạch và chạy lại stack Compose của Lab 05.
+Tài liệu này hướng dẫn người khác clone repo sạch và chạy lại stack Compose của Lab 05.
 
 ---
 
-## 1. Clone repo
+## 1. Clone repo
 
 ```bash
 git clone <repo-url>
@@ -13,7 +13,7 @@ cd FIT4110_lab05_docker_compose_readiness
 
 ---
 
-## 2. Cài dependencies cho Newman/Prism/Spectral (tuỳ chọn)
+## 2. Cài dependencies cho Newman/Prism/Spectral (tuỳ chọn)
 
 ```bash
 npm install
@@ -21,50 +21,64 @@ npm install
 
 ---
 
-## 3. Build & chạy stack Docker Compose
+## 3. Build & chạy stack Docker Compose
+
+Đảm bảo bạn đã khởi động Docker Desktop.
 
 ```bash
-# Copy .env.example sang .env và chỉnh sửa nếu cần
-cp .env.example .env
+# Bắt buộc tạo network bên ngoài trước khi chạy (quan trọng cho điểm 10)
+docker network create class-net || true
 
-# Build images (nếu chưa có) và khởi động các container trong nền
+# Khởi chạy các dịch vụ (API, DB, AI)
 docker compose up -d --build
 ```
 
-Lệnh trên sẽ tạo các container:
+> **Lưu ý:** Flag `--build` đảm bảo Docker luôn đóng gói code mới nhất.
 
-- `fit4110-db-lab05` (PostgreSQL)
-- `fit4110-ai-lab05` (AI service mẫu chạy port 9000)
-- `fit4110-api-lab05` (API FastAPI trên port 8000)
+---
 
-Theo dõi log:
+## 4. Kiểm tra Container và Logs
 
 ```bash
-docker compose logs -f
+# Xem trạng thái các dịch vụ
+docker compose ps
 ```
 
-Sau vài giây, kiểm tra health của mỗi service:
+Bạn sẽ thấy 3 dịch vụ ở trạng thái `Up`:
+- `fit4110-api-lab05` (cổng 8000)
+- `fit4110-db-lab05` (cổng 5432)
+- `fit4110-ai-lab05` (cổng 9000)
+
+Bạn có thể kiểm tra health của mỗi service:
 
 ```bash
-# API
+# API & DB & AI
 curl http://localhost:8000/health
 
-# AI service
+# AI service độc lập
 curl http://localhost:9000/health
 
 # DB readiness
-docker exec -it fit4110-db-lab05 pg_isready -U $POSTGRES_USER
-```
-
-Bạn cũng có thể truy cập endpoint `/predict` của AI service để xem kết quả mẫu:
-
-```bash
-curl -X POST http://localhost:9000/predict
+docker exec -it fit4110-db-lab05 pg_isready -U lab05
 ```
 
 ---
 
-## 4. Chạy Newman test trên stack Compose (tuỳ chọn)
+## 5. Build và Push Image theo chuẩn tag
+
+Bạn cần push image API lên GitHub Container Registry theo yêu cầu của Lab 05. Vì image API đã được Compose build sẵn, bạn chỉ cần tag lại rồi push:
+
+```bash
+docker login ghcr.io -u <your-username>
+docker tag lab-05-nielday-api:latest ghcr.io/nielday/team-iot:v0.1.0-team-iot
+docker push ghcr.io/nielday/team-iot:v0.1.0-team-iot
+```
+
+*(Lưu ý thay `nielday` bằng username thực tế của bạn)*
+
+---
+
+## 6. Chạy Newman test trên stack Compose (tuỳ chọn)
 
 ```bash
 npm run test:compose
@@ -79,7 +93,7 @@ reports/newman-lab05-compose.html
 
 ---
 
-## 5. Dừng stack
+## 7. Dừng stack và dọn dẹp
 
 Khi không cần nữa, dừng và xoá các container bằng:
 
@@ -95,20 +109,9 @@ docker compose down -v
 
 ---
 
-## 6. Lệnh nhanh
-
-Bạn có thể dùng Makefile:
-
-```bash
-make compose-up
-make compose-down
-make logs
-```
-
----
-
-## 7. Mẹo gỡ lỗi
+## 8. Mẹo gỡ lỗi
 
 - Sử dụng `docker compose ps` để xem trạng thái container.
+- Sử dụng `docker compose logs api` để kiểm tra lỗi bên trong API.
 - Nếu API trả lỗi kết nối DB, hãy kiểm tra biến môi trường `POSTGRES_*` trong `.env` và đảm bảo DB đã sẵn sàng (`pg_isready`).
-- Nếu AI service cần tải mô hình lớn, tăng `start_period` của healthcheck trong `docker-compose.yml`.
+- Nếu AI service chưa ready, kiểm tra log qua lệnh `docker compose logs ai-service`.

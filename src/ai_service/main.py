@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from typing import List
 
 SERVICE_NAME = "ai-service"
-SERVICE_VERSION = "0.5.0"
+SERVICE_VERSION = "0.1.0"
 
 app = FastAPI(
     title="FIT4110 Lab 05 - AI Service",
