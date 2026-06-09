@@ -59,7 +59,7 @@ curl http://localhost:8000/health
 curl http://localhost:9000/health
 
 # DB readiness
-docker exec -it fit4110-db-lab05 pg_isready -U lab05
+docker exec -it fit4110-db-lab05 pg_isready -U lab05 -d iotdb
 ```
 
 ---
